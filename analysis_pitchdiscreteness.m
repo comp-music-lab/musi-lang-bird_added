@@ -18,6 +18,7 @@ function analysis_pitchdiscreteness
 
     %%
     addpath('./lib/');
+    K = 8;
 
     if ~exist(outputdir, 'dir')
         mkdir(outputdir);
@@ -56,9 +57,9 @@ function analysis_pitchdiscreteness
                 if isempty(idx_ed_j)
                     idx_ed_j = numel(f0_cent_j);
                 end
-
-                if (idx_ed_j - idx_st_j + 1) >= 8
-                    H(end + 1) = klentropy(f0_cent_j(idx_st_j:idx_ed_j), 8);
+                
+                if (idx_ed_j - idx_st_j + 1) > K
+                    H(end + 1) = klentropy(f0_cent_j(idx_st_j:idx_ed_j), K);
                 end
 
                 idx_st_j = find(~isinf(f0_cent_j(idx_ed_j + 1:end)), 1, 'first') + idx_ed_j;
