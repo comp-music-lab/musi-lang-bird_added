@@ -8,6 +8,11 @@ G_VIOLIN_ADJUST <- 0.6
 G_JITTER_WID <- 0.2
 G_JITTER_ALP <- 0.4
 G_JITTER_SIZE <- 3
+G_XTICK_TEXT_SIZE <- 14
+G_YTICK_TEXT_SIZE <- 14
+G_XTITLE_TEXT_SIZE <- 16
+G_YTITLE_TEXT_SIZE <- 16
+G_LEGEND_TEXT_SIZE <- 15
 G_WID <- 8
 G_HEI <- 4
 
@@ -16,7 +21,7 @@ dataname <- c('Ireland old style', 'Yangguan Sandie', 'Happy Birthday',
               'English_short', 'Sometimes behave so strangely', 'Vietnamese',
               'CANYO', 'FIREB', 'KAUAI')
 labelname <- c('H2', 'H1', 'H3', 'S3', 'S1', 'S2', 'B3', 'B2', 'B1')
-datatype = c('Music', 'Music', 'Music',
+datatype <- c('Music', 'Music', 'Music',
              'Speech', 'Speech', 'Speech',
              'Birdsong', 'Birdsong', 'Birdsong')
 datadir <- './output/'
@@ -57,7 +62,10 @@ g <- ggplot(data = entropy_onsetwise, aes(x = Name, y = Entropy))
 g <- g + geom_violin(trim = TRUE, scale = G_VIOLIN_SCALE, adjust = G_VIOLIN_ADJUST)
 g <- g + geom_jitter(aes(color = Type), width = G_JITTER_WID, alpha = G_JITTER_ALP, size = G_JITTER_SIZE)
 g <- g + scale_x_discrete(limits = data_ordered, labels = label_ordered)
-g <- g + xlab('') + ggtitle('Onset-wise F0 entropy') + theme(plot.title = element_text(hjust = 0.5))
+g <- g + xlab('') + ggtitle('IOI-wise F0 entropy') + theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text.x = element_text(size = G_XTICK_TEXT_SIZE), axis.text.y = element_text(size = G_YTICK_TEXT_SIZE),
+        axis.title.x = element_text(size = G_XTITLE_TEXT_SIZE), axis.title.y = element_text(size = G_YTITLE_TEXT_SIZE)) + 
+  theme(legend.title = element_blank(), legend.text = element_text(size = G_LEGEND_TEXT_SIZE))
 
 plot(g)
 
@@ -69,11 +77,16 @@ ggsave(file = paste(outputdir, "figure_distribution.png", sep = ""), plot = g,
 g <- ggplot(data = entropy_mean, aes(x = Entropy, y = Rating))
 g <- g + geom_smooth(method = 'lm', formula = y~x)
 g <- g + geom_point(aes(color = Type))
-g <- g + ggtitle(paste('Mean entropy and human rating\n(Pearson\'s r = ', round(r, 2), ', slope = ', round(linearMod$coefficients[2], 2), ')', sep = '')) +
-  theme(plot.title = element_text(hjust = 0.5))
+g <- g + ggtitle('Mean entropy and human rating') +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text.x = element_text(size = G_XTICK_TEXT_SIZE), axis.text.y = element_text(size = G_YTICK_TEXT_SIZE),
+        axis.title.x = element_text(size = G_XTITLE_TEXT_SIZE), axis.title.y = element_text(size = G_YTITLE_TEXT_SIZE)) + 
+  theme(legend.title = element_blank(), legend.text = element_text(size = G_LEGEND_TEXT_SIZE))
 
 plot(g)
 
 ###### Output ######
 ggsave(file = paste(outputdir, "figure_correlation.png", sep = ""), plot = g,
        width = G_WID, height = G_HEI)
+
+#ggtitle(paste('Mean entropy and human rating\n(Pearson\'s r = ', round(r, 2), ', slope = ', round(linearMod$coefficients[2], 2), ')', sep = ''))
