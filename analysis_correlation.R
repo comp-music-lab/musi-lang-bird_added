@@ -65,7 +65,7 @@ g <- g + scale_x_discrete(limits = data_ordered, labels = label_ordered)
 g <- g + xlab('') + ggtitle('IOI-wise F0 entropy') + theme(plot.title = element_text(hjust = 0.5)) + 
   theme(axis.text.x = element_text(size = G_XTICK_TEXT_SIZE), axis.text.y = element_text(size = G_YTICK_TEXT_SIZE),
         axis.title.x = element_text(size = G_XTITLE_TEXT_SIZE), axis.title.y = element_text(size = G_YTITLE_TEXT_SIZE)) + 
-  theme(legend.title = element_blank(), legend.text = element_text(size = G_LEGEND_TEXT_SIZE))
+  theme(legend.title = element_blank(), legend.text = element_text(size = G_LEGEND_TEXT_SIZE), legend.position = "bottom")
 
 plot(g)
 
@@ -81,7 +81,7 @@ g <- g + ggtitle('Mean entropy and human rating') +
   theme(plot.title = element_text(hjust = 0.5)) + 
   theme(axis.text.x = element_text(size = G_XTICK_TEXT_SIZE), axis.text.y = element_text(size = G_YTICK_TEXT_SIZE),
         axis.title.x = element_text(size = G_XTITLE_TEXT_SIZE), axis.title.y = element_text(size = G_YTITLE_TEXT_SIZE)) + 
-  theme(legend.title = element_blank(), legend.text = element_text(size = G_LEGEND_TEXT_SIZE))
+  theme(legend.title = element_blank(), legend.text = element_text(size = G_LEGEND_TEXT_SIZE), legend.position = "bottom")
 
 plot(g)
 
