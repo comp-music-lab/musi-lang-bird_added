@@ -96,4 +96,4 @@ ggsave(file = paste(outputdir, "figure_correlation.png", sep = ""), plot = g2, w
 g <- ggarrange(g1, g2,  labels = c("D", "E"), ncol = 2, nrow = 1, common.legend = TRUE)
 
 ###### Output ######
-ggsave(file = paste(outputdir, "figure_combined.png", sep = ""), plot = g, width = G_WID, height = G_HEI)
+ggsave(file = paste(outputdir, "figure_combined.png", sep = ""), plot = g, width = 10, height = 2.5)
