@@ -84,7 +84,7 @@ g2 <- ggplot(data = entropy_mean, aes(x = Entropy, y = Rating))
 g2 <- g2 + geom_smooth(method = 'lm', formula = y~x)
 g2 <- g2 + geom_point(aes(color = Type)) + 
   scale_color_manual(values = COLORPALETTE)
-g2 <- g2 + ggtitle('Mean entropy and human rating') +
+g2 <- g2 + ggtitle('Weighted mean entropy and human rating') +
   theme(plot.title = element_text(hjust = 0.5)) + 
   theme(axis.text.x = element_text(size = G_XTICK_TEXT_SIZE), axis.text.y = element_text(size = G_YTICK_TEXT_SIZE),
         axis.title.x = element_text(size = G_XTITLE_TEXT_SIZE), axis.title.y = element_text(size = G_YTITLE_TEXT_SIZE)) + 
