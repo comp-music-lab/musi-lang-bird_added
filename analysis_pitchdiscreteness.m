@@ -37,16 +37,17 @@ function analysis_pitchdiscreteness
         
         %%
         onsetinfo = readtable(strcat('./data/seg_', dataname{i}, '.csv'));
-        t_onset = onsetinfo.onset_t;
-        t_onset(end + 1) = t_f0(end);
-        
+        breakinfo = readtable(strcat('./data/break_', dataname{i}, '.csv'));
+        [~, t_st, t_ed] = h_ioi(onsetinfo.onset_t, breakinfo.break_t);
+
         %%
         H = [];
+        L = [];
         f0_cent = f0_cent(:)';
 
-        for j=2:numel(t_onset)
-            [~, idx_st] = min(abs(t_f0 - t_onset(j - 1)));
-            [~, idx_ed] = min(abs(t_f0 - t_onset(j)));
+        for j=1:numel(t_st)
+            [~, idx_st] = min(abs(t_f0 - t_st(j)));
+            [~, idx_ed] = min(abs(t_f0 - t_ed(j)));
 
             f0_cent_j = f0_cent(idx_st:idx_ed);
 
@@ -60,6 +61,7 @@ function analysis_pitchdiscreteness
                 
                 if (idx_ed_j - idx_st_j + 1) > K
                     H(end + 1) = klentropy(f0_cent_j(idx_st_j:idx_ed_j), K);
+                    L(end + 1) = t_f0(idx_ed_j) - t_f0(idx_st_j);
                 end
 
                 idx_st_j = find(~isinf(f0_cent_j(idx_ed_j + 1:end)), 1, 'first') + idx_ed_j;
@@ -79,7 +81,7 @@ function analysis_pitchdiscreteness
         hold on;
         xlim([-1, 10]);
 
-        writetable(array2table(H(:), 'VariableNames', {'Entropy'}), strcat(outputdir, dataname{i}, '_H.csv'),...
+        writetable(array2table([H(:), L(:)], 'VariableNames', {'Entropy', 'Duration'}), strcat(outputdir, dataname{i}, '_H.csv'),...
             'WriteRowNames', false, 'WriteVariableNames', true);
 
         %%

@@ -37,7 +37,7 @@ for (i in 1:length(dataname)) {
   tmp$Name <- dataname[i]
   tmp$Type <- datatype[i]
   entropy_ioiwise <- rbind(entropy_ioiwise, tmp)
-  entropy_mean <- rbind(entropy_mean, data.frame(Entropy = mean(tmp$Entropy), Name = dataname[i], Type = datatype[i]))
+  entropy_mean <- rbind(entropy_mean, data.frame(Entropy = weighted.mean(tmp$Entropy, tmp$Duration), Name = dataname[i], Type = datatype[i]))
 }
 entropy_mean$Rating <- 0
 
@@ -65,7 +65,7 @@ print(paste('Pearson\'s r = ', round(r, 3), ', slope = ', round(linearMod$coeffi
 
 ###### plot ######
 g1 <- ggplot(data = entropy_ioiwise, aes(x = Name, y = Entropy))
-g1 <- g1 + geom_violin(trim = TRUE, scale = G_VIOLIN_SCALE, adjust = G_VIOLIN_ADJUST)
+g1 <- g1 + geom_violin(aes(weight = Duration), trim = TRUE, scale = G_VIOLIN_SCALE, adjust = G_VIOLIN_ADJUST)
 g1 <- g1 + geom_jitter(aes(color = Type), width = G_JITTER_WID, alpha = G_JITTER_ALP, size = G_JITTER_SIZE) + 
   scale_color_manual(values = COLORPALETTE)
 g1 <- g1 + scale_x_discrete(limits = data_ordered, labels = label_ordered)
