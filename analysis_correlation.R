@@ -9,7 +9,7 @@ G_JITTER_WID <- 0.2
 G_JITTER_ALP <- 0.4
 G_JITTER_SIZE <- 3
 G_WID <- 8
-G_HEI <- 6
+G_HEI <- 4
 
 ###### read data ######
 dataname <- c('Ireland old style', 'Yangguan Sandie', 'Happy Birthday',
