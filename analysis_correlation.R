@@ -8,13 +8,14 @@ G_VIOLIN_ADJUST <- 0.6
 G_JITTER_WID <- 0.2
 G_JITTER_ALP <- 0.4
 G_JITTER_SIZE <- 3
-G_XTICK_TEXT_SIZE <- 14
-G_YTICK_TEXT_SIZE <- 14
-G_XTITLE_TEXT_SIZE <- 16
-G_YTITLE_TEXT_SIZE <- 16
-G_LEGEND_TEXT_SIZE <- 15
+G_XTICK_TEXT_SIZE <- 12
+G_YTICK_TEXT_SIZE <- 12
+G_XTITLE_TEXT_SIZE <- 13
+G_YTITLE_TEXT_SIZE <- 13
+G_LEGEND_TEXT_SIZE <- 12
 G_WID <- 8
 G_HEI <- 4
+COLORPALETTE <- c("Human music" = "#56B4E9", "Human speech" = "#FF6600", "Birdsong" = "#009E73")
 
 ###### read data ######
 dataname <- c('Ireland old style', 'Yangguan Sandie', 'Happy Birthday',
@@ -27,10 +28,7 @@ datatype <- c('Human music', 'Human music', 'Human music',
 datadir <- './output/'
 outputdir <- './output/'
 
-datatype <- as.factor(datatype)
-levels(datatype) <- c("Human speech", "Birdsong", "Human music")
-
-entropy_onsetwise <- c()
+entropy_ioiwise <- c()
 entropy_mean <- c()
 
 for (i in 1:length(dataname)) {
@@ -38,10 +36,13 @@ for (i in 1:length(dataname)) {
   tmp <- read.csv(filepath)
   tmp$Name <- dataname[i]
   tmp$Type <- datatype[i]
-  entropy_onsetwise <- rbind(entropy_onsetwise, tmp)
+  entropy_ioiwise <- rbind(entropy_ioiwise, tmp)
   entropy_mean <- rbind(entropy_mean, data.frame(Entropy = mean(tmp$Entropy), Name = dataname[i], Type = datatype[i]))
 }
 entropy_mean$Rating <- 0
+
+entropy_ioiwise$Type <- factor(entropy_ioiwise$Type, levels = c("Human music", "Human speech", "Birdsong"))
+entropy_mean$Type <- factor(entropy_mean$Type, levels = c("Human music", "Human speech", "Birdsong"))
 
 ratinginfo <- read.csv('./data/PitchDiscretenessRating.csv')
 
@@ -63,9 +64,10 @@ linearMod <- lm(Rating ~ Entropy, data = entropy_mean)
 print(paste('Pearson\'s r = ', round(r, 3), ', slope = ', round(linearMod$coefficients[2], 3), sep = ''))
 
 ###### plot ######
-g1 <- ggplot(data = entropy_onsetwise, aes(x = Name, y = Entropy))
+g1 <- ggplot(data = entropy_ioiwise, aes(x = Name, y = Entropy))
 g1 <- g1 + geom_violin(trim = TRUE, scale = G_VIOLIN_SCALE, adjust = G_VIOLIN_ADJUST)
-g1 <- g1 + geom_jitter(aes(color = Type), width = G_JITTER_WID, alpha = G_JITTER_ALP, size = G_JITTER_SIZE)
+g1 <- g1 + geom_jitter(aes(color = Type), width = G_JITTER_WID, alpha = G_JITTER_ALP, size = G_JITTER_SIZE) + 
+  scale_color_manual(values = COLORPALETTE)
 g1 <- g1 + scale_x_discrete(limits = data_ordered, labels = label_ordered)
 g1 <- g1 + xlab('') + ggtitle('IOI-wise F0 entropy') + theme(plot.title = element_text(hjust = 0.5)) + 
   theme(axis.text.x = element_text(size = G_XTICK_TEXT_SIZE), axis.text.y = element_text(size = G_YTICK_TEXT_SIZE),
@@ -80,7 +82,8 @@ ggsave(file = paste(outputdir, "figure_distribution.png", sep = ""), plot = g1, 
 ###### plot ######
 g2 <- ggplot(data = entropy_mean, aes(x = Entropy, y = Rating))
 g2 <- g2 + geom_smooth(method = 'lm', formula = y~x)
-g2 <- g2 + geom_point(aes(color = Type))
+g2 <- g2 + geom_point(aes(color = Type)) + 
+  scale_color_manual(values = COLORPALETTE)
 g2 <- g2 + ggtitle('Mean entropy and human rating') +
   theme(plot.title = element_text(hjust = 0.5)) + 
   theme(axis.text.x = element_text(size = G_XTICK_TEXT_SIZE), axis.text.y = element_text(size = G_YTICK_TEXT_SIZE),
@@ -93,7 +96,8 @@ plot(g2)
 ggsave(file = paste(outputdir, "figure_correlation.png", sep = ""), plot = g2, width = G_WID, height = G_HEI)
 
 ###### Combining ######
-g <- ggarrange(g1, g2,  labels = c("D", "E"), ncol = 2, nrow = 1, common.legend = TRUE)
+g <- ggarrange(g1, g2,  labels = c("D", "E"), font.label = list(size = 14, face = "plain", color ="black"),
+               ncol = 2, nrow = 1, common.legend = TRUE)
 
 ###### Output ######
 ggsave(file = paste(outputdir, "figure_combined.png", sep = ""), plot = g, width = 10, height = 2.5)
