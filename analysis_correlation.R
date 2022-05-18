@@ -17,17 +17,33 @@ G_WID <- 8
 G_HEI <- 4
 COLORPALETTE <- c("Human music" = "#56B4E9", "Human speech" = "#FF6600", "Birdsong" = "#009E73")
 
-###### read data ######
-dataname <- c('Ireland old style', 'Yangguan Sandie', 'Happy Birthday',
-              'English_short', 'Sometimes behave so strangely', 'Vietnamese',
-              'CANYO', 'FIREB', 'KAUAI')
-labelname <- c('H2', 'H1', 'H3', 'S3', 'S1', 'S2', 'B3', 'B2', 'B1')
-datatype <- c('Human music', 'Human music', 'Human music',
-             'Human speech', 'Human speech', 'Human speech',
-             'Birdsong', 'Birdsong', 'Birdsong')
 datadir <- './output/'
 outputdir <- './output/'
 
+dataname <- c('Ireland old style', 'Yangguan Sandie', 'Happy Birthday',
+              'English_short', 'Sometimes behave so strangely', 'Vietnamese',
+              'CANYO', 'FIREB', 'KAUAI')
+labelname <- c('M2', 'M1', 'M3', 'S3', 'S1', 'S2', 'B3', 'B2', 'B1')
+datatype <- c('Human music', 'Human music', 'Human music',
+              'Human speech', 'Human speech', 'Human speech',
+              'Birdsong', 'Birdsong', 'Birdsong')
+
+###### read mean percentage error result ######
+mean_percentage_error <- read.csv(paste(datadir, 'MeanPercentageError_results.csv', sep = ''))
+
+mean_percentage_error$name[mean_percentage_error$name == 'Ireland Old Style'] <- dataname[1]
+mean_percentage_error$name[mean_percentage_error$name == 'American English'] <- dataname[4]
+mean_percentage_error$name[mean_percentage_error$name == '\'Sometimes behave so strangely\''] <- dataname[5]
+mean_percentage_error$name[mean_percentage_error$name == 'Canyon wren'] <- dataname[7]
+mean_percentage_error$name[mean_percentage_error$name == 'Firecrest'] <- dataname[8]
+mean_percentage_error$name[mean_percentage_error$name == 'Kauai O\' o'] <- dataname[9]
+
+if (!setequal(mean_percentage_error$name, dataname)) {
+  print('Error: Data name is inconsistent')
+  return()
+}
+
+###### read entropy result ######
 entropy_ioiwise <- c()
 entropy_mean <- c()
 
@@ -39,65 +55,84 @@ for (i in 1:length(dataname)) {
   entropy_ioiwise <- rbind(entropy_ioiwise, tmp)
   entropy_mean <- rbind(entropy_mean, data.frame(Entropy = weighted.mean(tmp$Entropy, tmp$Duration), Name = dataname[i], Type = datatype[i]))
 }
-entropy_mean$Rating <- 0
 
 entropy_ioiwise$Type <- factor(entropy_ioiwise$Type, levels = c("Human music", "Human speech", "Birdsong"))
 entropy_mean$Type <- factor(entropy_mean$Type, levels = c("Human music", "Human speech", "Birdsong"))
 
+###### read human rating result ######
 ratinginfo <- read.csv('./data/PitchDiscretenessRating.csv')
 
-idx <- sort(ratinginfo$Rating, decreasing = TRUE, index = TRUE)$ix
-data_ordered <- ratinginfo$Audio[idx]
+###### combine data ######
+pitchdiscreteness <- data.frame(Name = character(), Type = character(), MPE = numeric(), Entropy = numeric(), Rating = numeric())
+
+for (i in 1:length(dataname)) {
+  pitchdiscreteness[nrow(pitchdiscreteness) + 1, ] <- 
+    list(dataname[i],
+         datatype[i],
+         mean_percentage_error$mean_percentage_error[mean_percentage_error$name == dataname[i]],
+         entropy_mean$Entropy[entropy_mean$Name == dataname[i]],
+         ratinginfo$Rating[ratinginfo$Audio == dataname[i]]
+         )
+}
+
+pitchdiscreteness$Type <- factor(pitchdiscreteness$Type, levels = c("Human music", "Human speech", "Birdsong"))
+
+###### plot - main result ######
+idx <- sort(pitchdiscreteness$Rating, decreasing = TRUE, index = TRUE)$ix
+data_ordered <- pitchdiscreteness$Name[idx]
 label_ordered <- rep(c(''), length(data_ordered))
 for (i in 1:length(data_ordered)) {
   label_ordered[i] <- labelname[data_ordered[i] == dataname]
 }
 
-###### correlation ######
-for (i in 1:length(dataname)) {
-  entropy_mean[ratinginfo$Audio[i] == entropy_mean$Name, 4] <- ratinginfo$Rating[i]
-}
+g1 <- ggplot(data = pitchdiscreteness, aes(x = Name, y = Rating, color = Type))
+g1 <- g1 + geom_line(aes(group = 1), color = 'gray') + geom_point() +
+  theme(axis.title.x = element_blank()) + ylab("Human rating") + 
+  scale_x_discrete(limits = data_ordered, labels = label_ordered) + 
+  scale_y_continuous(breaks = c(4, 5, 6)) + theme(legend.title = element_blank())
 
-r <- cor(entropy_mean$Entropy, entropy_mean$Rating, method = "pearson")
-linearMod <- lm(Rating ~ Entropy, data = entropy_mean) 
+g2 <- ggplot(data = pitchdiscreteness, aes(x = Name, y = MPE, color = Type))
+g2 <- g2 + geom_line(aes(group = 1), color = 'gray') + geom_point() +
+  theme(axis.title.x = element_blank()) + ylab("Mean percentage error") + 
+  scale_x_discrete(limits = data_ordered, labels = label_ordered) + 
+  scale_y_continuous(breaks = c(2, 4, 6)) + theme(legend.title = element_blank())
 
-print(paste('Pearson\'s r = ', round(r, 3), ', slope = ', round(linearMod$coefficients[2], 3), sep = ''))
+g3 <- ggplot(data = pitchdiscreteness, aes(x = Name, y = Entropy, color = Type))
+g3 <- g3 + geom_line(aes(group = 1), color = 'gray') + geom_point() +
+  theme(axis.title.x = element_blank()) + ylab("Weighted average entropy") + 
+  scale_x_discrete(limits = data_ordered, labels = label_ordered) + 
+  scale_y_continuous(breaks = c(3, 4, 5)) + theme(legend.title = element_blank())
 
-###### plot ######
-g1 <- ggplot(data = entropy_ioiwise, aes(x = Name, y = Entropy))
-g1 <- g1 + geom_violin(aes(weight = Duration), trim = TRUE, scale = G_VIOLIN_SCALE, adjust = G_VIOLIN_ADJUST)
-g1 <- g1 + geom_jitter(aes(color = Type), width = G_JITTER_WID, alpha = G_JITTER_ALP, size = G_JITTER_SIZE) + 
-  scale_color_manual(values = COLORPALETTE)
-g1 <- g1 + scale_x_discrete(limits = data_ordered, labels = label_ordered)
-g1 <- g1 + xlab('') + ggtitle('IOI-wise F0 entropy') + theme(plot.title = element_text(hjust = 0.5)) + 
-  theme(axis.text.x = element_text(size = G_XTICK_TEXT_SIZE), axis.text.y = element_text(size = G_YTICK_TEXT_SIZE),
-        axis.title.x = element_text(size = G_XTITLE_TEXT_SIZE), axis.title.y = element_text(size = G_YTITLE_TEXT_SIZE)) + 
-  theme(legend.title = element_blank(), legend.text = element_text(size = G_LEGEND_TEXT_SIZE), legend.position = "bottom")
+g <- ggarrange(g1, g2, g3, font.label = list(size = 14, face = "plain", color ="black"),
+               ncol = 3, nrow = 1, common.legend = TRUE, legend = "bottom")
+g <- annotate_figure(g, top = text_grob("Pitch discreteness",  face = "bold", size = 16))
+plot(g)
 
-plot(g1)
+ggsave(file = paste(outputdir, "figure_pitchdiscreteness.png", sep = ""), plot = g, width = 8, height = 3)
 
-###### Output ######
-ggsave(file = paste(outputdir, "figure_distribution.png", sep = ""), plot = g1, width = G_WID, height = G_HEI)
+###### plot - correlation ######
+r1 <- cor(pitchdiscreteness$Rating, pitchdiscreteness$MPE, method = "pearson")
+r2 <- cor(pitchdiscreteness$Rating, pitchdiscreteness$Entropy, method = "pearson")
+r3 <- cor(pitchdiscreteness$MPE, pitchdiscreteness$Entropy, method = "pearson")
 
-###### plot ######
-g2 <- ggplot(data = entropy_mean, aes(x = Entropy, y = Rating))
-g2 <- g2 + geom_smooth(method = 'lm', formula = y~x)
-g2 <- g2 + geom_point(aes(color = Type)) + 
-  scale_color_manual(values = COLORPALETTE)
-g2 <- g2 + ggtitle('Weighted mean entropy and human rating') +
-  theme(plot.title = element_text(hjust = 0.5)) + 
-  theme(axis.text.x = element_text(size = G_XTICK_TEXT_SIZE), axis.text.y = element_text(size = G_YTICK_TEXT_SIZE),
-        axis.title.x = element_text(size = G_XTITLE_TEXT_SIZE), axis.title.y = element_text(size = G_YTITLE_TEXT_SIZE)) + 
-  theme(legend.position = "none")
+g1 <- ggplot(data = pitchdiscreteness, aes(x = Rating, y = MPE, color = Type))
+g1 <- g1 + geom_point() + theme(legend.title = element_blank()) + 
+  xlab("Human rating") + ylab("Mean percentage error") + 
+  annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', r1))
 
-plot(g2)
+g2 <- ggplot(data = pitchdiscreteness, aes(x = Rating, y = Entropy, color = Type))
+g2 <- g2 + geom_point() + theme(legend.title = element_blank()) + 
+  xlab("Human rating") + ylab("Weighted average entropy") + 
+  annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', r2))
 
-###### Output ######
-ggsave(file = paste(outputdir, "figure_correlation.png", sep = ""), plot = g2, width = G_WID, height = G_HEI)
+g3 <- ggplot(data = pitchdiscreteness, aes(x = MPE, y = Entropy, color = Type))
+g3 <- g3 + geom_point() + theme(legend.title = element_blank()) + 
+  xlab("Mean percentage error") + ylab("Weighted average entropy") + 
+  annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', r3))
 
-###### Combining ######
-g <- ggarrange(g1, g2,  labels = c("D", "E"), font.label = list(size = 14, face = "plain", color ="black"),
-               ncol = 2, nrow = 1, common.legend = TRUE)
+g <- ggarrange(g1, g2, g3, font.label = list(size = 14, face = "plain", color ="black"),
+               ncol = 3, nrow = 1, common.legend = TRUE, legend = "bottom")
+g <- annotate_figure(g, top = text_grob("Correlations",  face = "bold", size = 16))
+plot(g)
 
-###### Output ######
-ggsave(file = paste(outputdir, "figure_combined.png", sep = ""), plot = g, width = 10, height = 2.5)
+ggsave(file = paste(outputdir, "figure_corr.png", sep = ""), plot = g, width = 8, height = 3)
