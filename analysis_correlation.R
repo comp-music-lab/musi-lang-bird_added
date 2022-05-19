@@ -111,24 +111,27 @@ plot(g)
 ggsave(file = paste(outputdir, "figure_pitchdiscreteness.png", sep = ""), plot = g, width = 8, height = 3)
 
 ###### plot - correlation ######
-r1 <- cor(pitchdiscreteness$Rating, pitchdiscreteness$MPE, method = "pearson")
-r2 <- cor(pitchdiscreteness$Rating, pitchdiscreteness$Entropy, method = "pearson")
-r3 <- cor(pitchdiscreteness$MPE, pitchdiscreteness$Entropy, method = "pearson")
+t1 <- cor.test(pitchdiscreteness$Rating, pitchdiscreteness$MPE, alternative = c("less"), method = "pearson", conf.level = 0.95)
+t2 <- cor.test(pitchdiscreteness$Rating, pitchdiscreteness$Entropy, alternative = c("less"), method = "pearson", conf.level = 0.95)
+t3 <- cor.test(pitchdiscreteness$MPE, pitchdiscreteness$Entropy, alternative = c("greater"), method = "pearson", conf.level = 0.95)
 
 g1 <- ggplot(data = pitchdiscreteness, aes(x = Rating, y = MPE, color = Type))
 g1 <- g1 + geom_point() + theme(legend.title = element_blank()) + 
   xlab("Human rating") + ylab("Mean percentage error") + 
-  annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', r1))
+  annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', t1$estimate)) + 
+  annotate(geom = "text", x = 4.66, y = 5.88, hjust = 0, vjust = 0, label = sprintf('p = %1.2f%%', t1$p.value*100))
 
 g2 <- ggplot(data = pitchdiscreteness, aes(x = Rating, y = Entropy, color = Type))
 g2 <- g2 + geom_point() + theme(legend.title = element_blank()) + 
   xlab("Human rating") + ylab("Weighted average entropy") + 
-  annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', r2))
+  annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', t2$estimate)) + 
+  annotate(geom = "text", x = 4.66, y = 5.27, hjust = 0, vjust = 0, label = sprintf('p = %1.2f%%', t2$p.value*100))
 
 g3 <- ggplot(data = pitchdiscreteness, aes(x = MPE, y = Entropy, color = Type))
 g3 <- g3 + geom_point() + theme(legend.title = element_blank()) + 
   xlab("Mean percentage error") + ylab("Weighted average entropy") + 
-  annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', r3))
+  annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', t3$estimate)) + 
+  annotate(geom = "text", x = 2.59, y = 5.27, hjust = 0, vjust = 0, label = sprintf('p = %1.2f%%', t3$p.value*100))
 
 g <- ggarrange(g1, g2, g3, font.label = list(size = 14, face = "plain", color ="black"),
                ncol = 3, nrow = 1, common.legend = TRUE, legend = "bottom")
