@@ -119,19 +119,19 @@ g1 <- ggplot(data = pitchdiscreteness, aes(x = Rating, y = MPE, color = Type))
 g1 <- g1 + geom_point() + theme(legend.title = element_blank()) + 
   xlab("Human rating") + ylab("Mean percentage error") + 
   annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', t1$estimate)) + 
-  annotate(geom = "text", x = 4.66, y = 5.88, hjust = 0, vjust = 0, label = sprintf('p = %1.2f%%', t1$p.value*100))
+  annotate(geom = "text", x = 4.66, y = 5.88, hjust = 0, vjust = 0, label = paste('p = ', substr(sprintf('%0.3f', t1$p.value), 2, 5), sep = ''))
 
 g2 <- ggplot(data = pitchdiscreteness, aes(x = Rating, y = Entropy, color = Type))
 g2 <- g2 + geom_point() + theme(legend.title = element_blank()) + 
   xlab("Human rating") + ylab("Weighted average entropy") + 
   annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', t2$estimate)) + 
-  annotate(geom = "text", x = 4.66, y = 5.27, hjust = 0, vjust = 0, label = sprintf('p = %1.2f%%', t2$p.value*100))
+  annotate(geom = "text", x = 4.66, y = 5.27, hjust = 0, vjust = 0, label = paste('p = ', substr(sprintf('%0.3f', t2$p.value), 2, 5), sep = ''))
 
 g3 <- ggplot(data = pitchdiscreteness, aes(x = MPE, y = Entropy, color = Type))
 g3 <- g3 + geom_point() + theme(legend.title = element_blank()) + 
   xlab("Mean percentage error") + ylab("Weighted average entropy") + 
   annotate(geom = "text", x = -Inf, y = Inf, hjust = -1.5, vjust = 1, label = sprintf('r = %3.2f', t3$estimate)) + 
-  annotate(geom = "text", x = 2.59, y = 5.27, hjust = 0, vjust = 0, label = sprintf('p = %1.2f%%', t3$p.value*100))
+  annotate(geom = "text", x = 2.59, y = 5.27, hjust = 0, vjust = 0, label = paste('p = ', substr(sprintf('%0.4f', t3$p.value), 2, 6), sep = ''))
 
 g <- ggarrange(g1, g2, g3, font.label = list(size = 14, face = "plain", color ="black"),
                ncol = 3, nrow = 1, common.legend = TRUE, legend = "bottom")
